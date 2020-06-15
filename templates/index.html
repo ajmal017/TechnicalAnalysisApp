@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Analysis App</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body class="content">
+    <div class="form-group" onchange="handleOption()">
+        <select class="form-control" id="option">
+        {% for option in options %}
+            <option class="form-control" value="{{option}}">{{option}}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <br>
+    <button id="buy" type="button" class="btn btn-success btn-lg">Buy Probability 93%</button>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <button id="sell" type="button" class="btn btn-danger btn-lg">Sell Probability 7%</button>
+    <div>
+        <img id="graph" width="600px" src="https://a.c-dn.net/b/3TLwiG/macd-indicator_body_MACDexample.png.full.png"/>
+    </div>
+    <form class="form-group" onchange="handleIndicator()">
+    {% for indicator in indicators %}
+        {% if indicator == 'Close' %}
+            <label class="radio-inline input-lg"><input type="radio" name="indicator" value="{{indicator}}" checked/>{{indicator}}</label>
+        {% else %}
+            <label class="radio-inline input-lg"><input type="radio" name="indicator" value="{{indicator}}"/>{{indicator}}</label>
+        {% endif %}
+    {% endfor %}
+    </form>
+</body>
+<style>
+    .content {
+      max-width: 600px;
+      margin: auto;
+      margin-top: 20px;
+      text-align: center;
+    }
+</style>
+<script>
+$(document).ready(handleOption);
+function handleOption() {
+    var option = $('#option').val();
+    $.get('/api/trends?option='+option, function(data, status) {
+        if(!data.success) return alert('Unable to load trends for the given option');
+        var buy = parseFloat(data.Buy)*100;
+        var sell = parseFloat(data.Sell)*100;
+        var buy = 'Buy Probability ' + buy.toFixed(2) + '%';
+        var sell = 'Sell Probability ' + sell.toFixed(2) + '%';
+        $('#buy').html(buy);
+        $('#sell').html(sell);
+        handleIndicator();
+    });
+}
+function handleIndicator() {
+    var option = $('#option').val();
+    var indicator = $("input[name='indicator']:checked").val()
+    $.get('/api/graphs?option='+option+'&indicator='+indicator, function(data, status) {
+        $("#graph").attr("src", data.graph);
+    });
+}
+</script>
+</html>
